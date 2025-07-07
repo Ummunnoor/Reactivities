@@ -1,17 +1,10 @@
-import {
-  AppBar,
-  Box,
-  Button,
-  Container,
-  MenuItem,
-  Typography,
-} from "@mui/material";
+import { AppBar, Box, Container, MenuItem, Typography } from "@mui/material";
 import Toolbar from "@mui/material/Toolbar";
 import { Group } from "@mui/icons-material";
-type Props = {
-  openForm: () => void;
-}
-export function NavBar({openForm} : Props) {
+import { NavLink } from "react-router";
+import MenuItemLink from "../shared/components/MenuItemLink";
+
+export function NavBar() {
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar
@@ -24,44 +17,23 @@ export function NavBar({openForm} : Props) {
         <Container maxWidth="xl">
           <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
             <Box>
-              <MenuItem sx={{ display: "flex", gap: 2 }}>
+              <MenuItem
+                component={NavLink}
+                to="/"
+                sx={{ display: "flex", gap: 2 }}
+              >
                 <Group fontSize="large" />
                 <Typography variant="h4" fontWeight="bold">
                   Reactivities
                 </Typography>
               </MenuItem>
             </Box>
-            <Box sx={{display: 'flex'}}>
-              <MenuItem
-                sx={{
-                  fontSize: "1.2rem",
-                  textTransform: "uppercase",
-                  fontWeight: "bold",
-                }}
-              >
-                Activities
-              </MenuItem>
-              <MenuItem
-                sx={{
-                  fontSize: "1.2rem",
-                  textTransform: "uppercase",
-                  fontWeight: "bold",
-                }}
-              >
-                Contact
-              </MenuItem><MenuItem
-                sx={{
-                  fontSize: "1.2rem",
-                  textTransform: "uppercase",
-                  fontWeight: "bold",
-                }}
-              >
-                About
-              </MenuItem>
+            <Box sx={{ display: "flex" }}>
+              
+              <MenuItemLink to="/activities">Activities</MenuItemLink>
+              <MenuItemLink to="/createActivity">Create Activity</MenuItemLink>
             </Box>
-            <Button variant="contained" size="large" color="warning" onClick={openForm}>
-              Create activity
-            </Button>
+            <MenuItem>User Menu</MenuItem>
           </Toolbar>
         </Container>
       </AppBar>
