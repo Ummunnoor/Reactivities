@@ -3,6 +3,7 @@ import agent from "../agent";
 
 export const useActivities = (id?: string) => {
   const queryClient = new QueryClient();
+  
   const { data: activities, isPending } = useQuery({
     queryKey: ["activities"],
     queryFn: async () => {
