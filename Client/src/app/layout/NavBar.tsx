@@ -36,6 +36,8 @@ export function NavBar() {
               <MenuItemLink to="/activities">Activities</MenuItemLink>
               <MenuItemLink to="/createActivity">Create Activity</MenuItemLink>
               <MenuItemLink to="/counter">Counter</MenuItemLink>
+              <MenuItemLink to="/error">Errors</MenuItemLink>
+
 
             </Box>
             <MenuItem>User Menu</MenuItem>
