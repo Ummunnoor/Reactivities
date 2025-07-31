@@ -34,7 +34,6 @@ export const router = createBrowserRouter([
       { path: "server-error", element: <ServerError /> },
       { path: "login", element: <LogInForm /> },
       { path: "register", element: <RegisterForm /> },
-
       { path: "*", element: <Navigate replace to={"/not-found"} /> },
     ],
   },

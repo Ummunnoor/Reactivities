@@ -1,7 +1,7 @@
-import { format, type DateArg } from "date-fns";
+import { format } from "date-fns";
 import z from "zod";
 
-export function formatDate(date: DateArg<Date>){
+export function formatDate(date: Date){
     return format(date, "dd MMM yyyy h:mm a")
 }
 export const requiredString = (fieldName: string) => z.string({error:  `${fieldName} isrequired`})

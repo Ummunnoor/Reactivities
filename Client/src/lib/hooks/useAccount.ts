@@ -5,6 +5,7 @@ import agent from "../agent";
 import { useLocation, useNavigate } from "react-router";
 import type { RegisterSchema } from "../schemas/registerSchema";
 import { toast } from "react-toastify";
+
 export const useAccount = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -26,7 +27,7 @@ export const useAccount = () => {
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: ["user"],
+        queryKey: ["user"]
       });
     },
   });
@@ -47,8 +48,7 @@ export const useAccount = () => {
       const response = await agent.get<User>("/account/user-info");
       return response.data;
     },
-    enabled:
-       !queryClient.getQueryData(['user']) &&
+    enabled: !queryClient.getQueryData(['user']) &&
       location.pathname !== "/login" &&
       location.pathname !== "/register",
   });

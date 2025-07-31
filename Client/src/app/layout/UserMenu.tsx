@@ -52,7 +52,7 @@ export default function UserMenu() {
 
         <MenuItem component={Link} to="/profile" onClick={handleClose}>
           <ListItemIcon>
-            <Person />
+            <Person /> 
           </ListItemIcon>
           <ListItemText>My profile</ListItemText>
         </MenuItem>

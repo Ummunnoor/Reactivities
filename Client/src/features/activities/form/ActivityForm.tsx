@@ -40,20 +40,21 @@ export default function ActivityForm() {
   }, [activity, reset]);
 
   const onSubmit = async (data: ActivitySchema) => {
-    const {location, ...rest} = data;
-    const flattenedData = {...rest, ...location};
+    const { location, ...rest } = data;
+    const flattenedData = { ...rest, ...location };
     console.log(flattenedData);
     try {
-      if(activity)
-      {
-        updateActivity.mutate({...activity, ...flattenedData}, {
-        onSuccess: () => navigate(`/activities/${activity.id}`)
-        })
-      }
-      else{
+      if (activity) {
+        updateActivity.mutate(
+          { ...activity, ...flattenedData },
+          {
+            onSuccess: () => navigate(`/activities/${activity.id}`),
+          }
+        );
+      } else {
         createActivity.mutate(flattenedData, {
-          onSuccess : (id) => navigate(`/activities/${id}`)
-        })
+          onSuccess: (id) => navigate(activity ? `/activities/${id}` : '/activities'),
+        });
       }
     } catch (error) {
       console.log(error);
@@ -91,7 +92,9 @@ export default function ActivityForm() {
         />
 
         <Box display="flex" justifyContent="end" gap={3}>
-          <Button color="inherit">Cancel</Button>
+          <Button color="inherit" onClick={() => navigate( activity ?`/activities/${activity.id}` : '/activities')}>
+            Cancel
+          </Button>
           <Button
             type="submit"
             color="success"
