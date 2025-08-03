@@ -1,10 +1,12 @@
-import { QueryClient, useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import agent from "../agent";
 import { useLocation } from "react-router";
 import { useAccount } from "./useAccount";
+import type { FieldValue } from "react-hook-form";
+import type { ActivitySchema } from "../schemas/activitySchema";
 
 export const useActivities = (id?: string) => {
-  const queryClient = new QueryClient();
+  const queryClient = useQueryClient();
   const location = useLocation();
   const { currentUser } = useAccount();
 
@@ -52,7 +54,7 @@ export const useActivities = (id?: string) => {
     },
   });
   const createActivity = useMutation({
-    mutationFn: async (activity: Activity) => {
+    mutationFn: async (activity: FieldValue<ActivitySchema>) => {
       const response = await agent.post("/activities", activity);
       return response.data;
     },
@@ -81,6 +83,7 @@ export const useActivities = (id?: string) => {
     },
     onMutate: async (activityId: string) => {
       await queryClient.cancelQueries({ queryKey: ["activities", activityId] });
+
       const prevActivity = queryClient.getQueryData<Activity>([
         "activities",
         activityId,
@@ -95,12 +98,12 @@ export const useActivities = (id?: string) => {
           const isAttending = oldActivity.attendees.some(
             (x) => x.id === currentUser.id
           );
-
           return {
             ...oldActivity,
             isCancelled: isHost
               ? !oldActivity.isCancelled
               : oldActivity.isCancelled,
+          // remove the user from attendees if they are not the host but attending
             attendees: isAttending
               ? isHost
                 ? oldActivity.attendees
@@ -108,7 +111,7 @@ export const useActivities = (id?: string) => {
               : [
                   ...oldActivity.attendees,
                   {
-                    id: currentUser.id,
+                    id: currentUser.id, 
                     displayName: currentUser.displayName,
                     imageUrl: currentUser.imageUrl,
                   },
@@ -117,7 +120,7 @@ export const useActivities = (id?: string) => {
         }
       );
 
-      return { id: activityId, prevActivity };
+      return { prevActivity };
     },
     onError: (error, activityId, context) => {
       console.log(error);
