@@ -12,7 +12,7 @@ public class SetMainPhoto
     {
         public required string PhotoId { get; set; }
     }
-    public class Handler(AppDbContext context, IUserAccessor userAccessor) 
+    public class Handler(AppDbContext context, IUserAccessor userAccessor)
      : IRequestHandler<Command, Result<Unit>>
     {
         public async Task<Result<Unit>> Handle(Command request, CancellationToken cancellationToken)
