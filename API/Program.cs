@@ -1,5 +1,6 @@
 using System;
 using API.Middleware;
+using API.SignalR;
 using application.Activities.Queries;
 using application.Activities.validator;
 using application.Core;
@@ -31,6 +32,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 builder.Services.AddCors();
+builder.Services.AddSignalR();
 builder.Services.AddMediatR(x =>
 {
     x.RegisterServicesFromAssemblyContaining<GetActivityList.Handler>();
@@ -69,7 +71,9 @@ app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod()
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-app.MapGroup("api").MapIdentityApi<User>();
+app.MapGroup("api").MapIdentityApi<User>(); // api/login
+
+app.MapHub<CommentHub>("/comments");
 using var scope = app.Services.CreateScope();
 var services = scope.ServiceProvider;
 try

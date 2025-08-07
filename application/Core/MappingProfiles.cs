@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using application.Activities.Commands;
 using application.Activities.DTOs;
 using application.Profiles.DTOs;
+using Application.Activities.DTOs;
 using AutoMapper;
 using Domain;
 
@@ -28,6 +29,11 @@ namespace application.Core
              .ForMember(d => d.Id, o => o.MapFrom(s => s.User.Id));
 
             CreateMap<User, UserProfile>();
+
+            CreateMap<Comment, CommentDto>()
+            .ForMember(d => d.DisplayName, o => o.MapFrom(s => s.User.DisplayName))
+            .ForMember(d => d.UserId, o => o.MapFrom(s => s.User.Id))
+            .ForMember(d => d.ImageUrl, o => o.MapFrom(s => s.User.ImageUrl));
 
 
 

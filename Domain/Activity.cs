@@ -17,8 +17,10 @@ namespace Domain
         public required string Venue { get; set; }
         public double Longitude { get; set; }
         public double Latitude { get; set; }
-        
+
         //navigation property
         public ICollection<ActivityAttendee> Attendees { get; set; } = [];
+
+        public ICollection<Comment> Comments { get; set; } = [];
     }
 }
