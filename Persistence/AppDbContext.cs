@@ -20,6 +20,8 @@ namespace Persistence
         public  DbSet<Photo> Photos { get; set; }
 
         public  DbSet<Comment> Comments { get; set; }
+
+        public DbSet<UserFollowing> UserFollowings { get; set; }
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -39,7 +41,7 @@ namespace Persistence
                 v => v.ToUniversalTime(),
                 v => DateTime.SpecifyKind(v, DateTimeKind.Utc)
             );
-
+            // for converting time to utc time zone as in time ago
             foreach (var entityType in builder.Model.GetEntityTypes())
             {
                 foreach (var property in entityType.GetProperties())
@@ -50,6 +52,21 @@ namespace Persistence
                     }
                 }
             }
+
+            builder.Entity<UserFollowing>(x =>
+            {
+                x.HasKey(k => new { k.FollowerId, k.FolloweeId });
+
+                x.HasOne(o => o.Follower)
+                .WithMany(f => f.Followings)
+                .HasForeignKey(k => k.FollowerId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+                x.HasOne(o => o.Followee)
+                .WithMany(f => f.Followers)
+                .HasForeignKey(k => k.FolloweeId)
+                .OnDelete(DeleteBehavior.Cascade);
+            });
         }
     }
 }
