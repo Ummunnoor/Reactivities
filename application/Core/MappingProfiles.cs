@@ -6,6 +6,7 @@ using application.Activities.Commands;
 using application.Activities.DTOs;
 using application.Profiles.DTOs;
 using Application.Activities.DTOs;
+using Application.Profiles;
 using AutoMapper;
 using Domain;
 
@@ -45,7 +46,7 @@ namespace application.Core
             .ForMember(d => d.ImageUrl, o => o.MapFrom(s => s.User.ImageUrl));
 
 
-
+            CreateMap<Activity, UserActivityDto>();
             
         }
     }

@@ -1,33 +1,57 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import agent from "../agent";
 import { useLocation } from "react-router";
 import { useAccount } from "./useAccount";
 import type { FieldValue } from "react-hook-form";
 import type { ActivitySchema } from "../schemas/activitySchema";
+import { useStore } from "./useStore";
 
 export const useActivities = (id?: string) => {
+  const {activityStore : {filter, startDate}} = useStore();
   const queryClient = useQueryClient();
   const location = useLocation();
   const { currentUser } = useAccount();
 
-  const { data: activities, isLoading } = useQuery({
-    queryKey: ["activities"],
-    queryFn: async () => {
-      const response = await agent.get<Activity[]>("/activities");
+  const { data: activitiesGroup, isLoading, isFetchingNextPage, fetchNextPage, hasNextPage } =
+   useInfiniteQuery<PagedList<Activity, string>>({
+    queryKey: ["activities", filter, startDate],
+    queryFn: async ({ pageParam = null }) => {
+      const response = await agent.get<PagedList<Activity,string>>("/activities", {
+        params: {
+          cursor: pageParam,
+          pageSize: 3,
+          filter,
+          startDate
+        },
+      });
       return response.data;
     },
+    staleTime : 1000 * 60 * 5,
+    placeholderData : keepPreviousData,
+    initialPageParam: null,
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
     enabled: !id && location.pathname === "/activities" && !!currentUser,
-    select: (data) => {
-      return data.map((activity) => {
-        const host = activity.attendees.find(x => x.id === activity.hostId);
-        return {
-          ...activity,
-          isHost: currentUser?.id === activity.hostId,
-          isGoing: activity.attendees.some((x) => x.id === currentUser?.id),
-          hostImageUrl: host?.imageUrl
-        };
-      });
-    },
+    select: (data) => ({
+      ...data,
+      pages: data.pages.map((page) => ({
+        ...page,
+        items: page.items.map((activity) => {
+          const host = activity.attendees.find((x) => x.id === activity.hostId);
+          return {
+            ...activity,
+            isHost: currentUser?.id === activity.hostId,
+            isGoing: activity.attendees.some((x) => x.id === currentUser?.id),
+            hostImageUrl: host?.imageUrl,
+          };
+        }),
+      })),
+    }),
   });
   const { data: activity, isLoading: isLoadingActivity } = useQuery({
     queryKey: ["activities", id],
@@ -37,12 +61,12 @@ export const useActivities = (id?: string) => {
     },
     enabled: !!id && !!currentUser,
     select: (data) => {
-      const host = data.attendees.find(x => x.id === data.hostId);
+      const host = data.attendees.find((x) => x.id === data.hostId);
       return {
         ...data,
         isHost: currentUser?.id === data.hostId,
         isGoing: data.attendees.some((x) => x.id === currentUser?.id),
-        hostImageUrl: host?.imageUrl
+        hostImageUrl: host?.imageUrl,
       };
     },
   });
@@ -107,7 +131,7 @@ export const useActivities = (id?: string) => {
             isCancelled: isHost
               ? !oldActivity.isCancelled
               : oldActivity.isCancelled,
-          // remove the user from attendees if they are not the host but attending
+            // remove the user from attendees if they are not the host but attending
             attendees: isAttending
               ? isHost
                 ? oldActivity.attendees
@@ -115,7 +139,7 @@ export const useActivities = (id?: string) => {
               : [
                   ...oldActivity.attendees,
                   {
-                    id: currentUser.id, 
+                    id: currentUser.id,
                     displayName: currentUser.displayName,
                     imageUrl: currentUser.imageUrl,
                   },
@@ -138,8 +162,11 @@ export const useActivities = (id?: string) => {
   });
 
   return {
-    activities,
+    activitiesGroup,
     isLoading,
+    isFetchingNextPage,
+    fetchNextPage,
+    hasNextPage,
     updateActivity,
     createActivity,
     deleteActivity,
