@@ -20,7 +20,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers( opt =>
+builder.Services.AddControllers(opt =>
 {
     var policy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
     opt.Filters.Add(new AuthorizeFilter(policy));
@@ -29,7 +29,7 @@ builder.Services.AddControllers( opt =>
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 builder.Services.AddCors();
 builder.Services.AddSignalR();
@@ -64,16 +64,32 @@ var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 app.UseMiddleware<ExceptionMiddleware>();
-app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod()
-    .AllowCredentials()
-   .WithOrigins("http://localhost:3000", "https://localhost:3000"));
+
+var allowedOrigins = new[]
+{
+    "http://localhost:3000",
+    "https://localhost:3000",
+    "https://reactivities-course.azurewebsites.net" // your Azure frontend URL
+};
+
+app.UseCors(x => x
+ .AllowAnyHeader()
+ .AllowAnyMethod()
+ .AllowCredentials()
+ .WithOrigins(allowedOrigins));
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 app.MapControllers();
 app.MapGroup("api").MapIdentityApi<User>(); // api/login
 
 app.MapHub<CommentHub>("/comments");
+
+app.MapFallbackToController("Index", "Fallback");
 using var scope = app.Services.CreateScope();
 var services = scope.ServiceProvider;
 try

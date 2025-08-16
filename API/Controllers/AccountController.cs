@@ -30,11 +30,12 @@ namespace API.Controllers
             }
             return ValidationProblem();
         }
-        
+
+        [AllowAnonymous]
         [HttpGet("user-info")]
         public async Task<ActionResult> GetUserInfo()
         {
-            if (User.Identity == null || !User.Identity.IsAuthenticated) return NoContent();
+            if (User.Identity?.IsAuthenticated == false) return NoContent();
             var user = await signInManager.UserManager.GetUserAsync(User);
             if (user == null) return Unauthorized();
             return Ok(new

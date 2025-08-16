@@ -92,7 +92,7 @@ export default function ActivityForm() {
         />
 
         <Box display="flex" justifyContent="end" gap={3}>
-          <Button color="inherit" onClick={() => navigate( activity ?`/activities/${activity.id}` : '/activities')}>
+          <Button color="inherit" onClick={() => navigate(-1)}>
             Cancel
           </Button>
           <Button

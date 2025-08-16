@@ -14,7 +14,7 @@ import { useProfile } from "../../lib/hooks/useProfile";
 
 export default function ProfileHeader() {
   const { id } = useParams();
-  const { isCurrentUser, profile, updateFollowing } = useProfile(id);
+  const { isCurrentUser,profile,  updateFollowing } = useProfile(id);
   if (!profile) return null;
   return (
     <Paper elevation={3} sx={{ borderRadius: 3, p: 4 }}>

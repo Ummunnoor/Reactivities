@@ -65,7 +65,7 @@ namespace Persistence
                 x.HasOne(o => o.Followee)
                 .WithMany(f => f.Followers)
                 .HasForeignKey(k => k.FolloweeId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.NoAction);
             });
         }
     }

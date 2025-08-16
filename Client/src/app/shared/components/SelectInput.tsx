@@ -5,7 +5,7 @@ import {
   MenuItem,
   Select,
 } from "@mui/material";
-import { type SelectInputProps } from "@mui/material/Select/SelectInput";
+import {type SelectProps } from "@mui/material/Select";
 import {
   useController,
   type FieldValues,
@@ -15,7 +15,7 @@ type Props<T extends FieldValues> = {
   items: { text: string; value: string }[];
   label: string;
 } & UseControllerProps<T> &
-  Partial<SelectInputProps>;
+  Partial<SelectProps>;
 
 export default function SelectInput<T extends FieldValues>(props: Props<T>) {
   const { field, fieldState } = useController({ ...props });
