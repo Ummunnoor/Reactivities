@@ -1,16 +1,20 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using API.DTOs;
 using Domain;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers
 {
-    public class AccountController(SignInManager<User> signInManager) : BaseApiController
+    public class AccountController(SignInManager<User> signInManager, IEmailSender<User> emailSender,
+     IConfiguration configuration) : BaseApiController
     {
         [AllowAnonymous]
         [HttpPost("register")]
@@ -23,13 +27,42 @@ namespace API.Controllers
                 DisplayName = registerDto.DisplayName
             };
             var result = await signInManager.UserManager.CreateAsync(user, registerDto.Password);
-            if (result.Succeeded) return Ok();
+            if (result.Succeeded)
+
+            {
+                await SendConfirmationEmailAsync(user, registerDto.Email);
+                return Ok();
+            }
+
             foreach (var error in result.Errors)
             {
                 ModelState.AddModelError(error.Code, error.Description);
             }
             return ValidationProblem();
         }
+
+        private async Task SendConfirmationEmailAsync(User user, string email)
+        {
+            var code = await signInManager.UserManager.GenerateEmailConfirmationTokenAsync(user);
+            code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+            var confirmEmailUrl = $"{configuration["ClientAppUrl"]}/confirm-email?userId={user.Id}&code={code}";
+            await emailSender.SendConfirmationLinkAsync(user, email, confirmEmailUrl);
+        }
+
+
+        [AllowAnonymous]
+        [HttpGet("resendConfirmEmail")]
+        public async Task<ActionResult> ResendConfirmEmail(string email)
+        {
+            var user = await signInManager.UserManager.Users
+            .FirstOrDefaultAsync(x => x.Email == email);
+            if (user == null)
+                return BadRequest("Invalid email");
+            await SendConfirmationEmailAsync(user, email);
+            return Ok();
+        }
+
+
 
         [AllowAnonymous]
         [HttpGet("user-info")]
