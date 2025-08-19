@@ -9,15 +9,10 @@ import { toast } from "react-toastify";
 export const useAccount = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  
 
   const registerUser = useMutation({
     mutationFn: async (creds: RegisterSchema) => {
       await agent.post("/account/register", creds);
-    },
-    onSuccess: () => {
-      toast.success("Register successful - you can now login");
-      navigate("/login");
     },
   });
 
@@ -27,10 +22,31 @@ export const useAccount = () => {
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: ["user"]
+        queryKey: ["user"],
       });
     },
   });
+
+  const verifyEmail = useMutation({
+    mutationFn: async ({ userId, code }: { userId: string; code: string }) => {
+      await agent.get(`/confirmEmail?userId=${userId}&code=${code}`);
+    },
+  });
+
+  const resendConfirmationEmail = useMutation({
+    mutationFn: async ({email, userId}:{email?: string, userId?: string | null}) => {
+      await agent.get(`/account/resendConfirmEmail`, {
+        params: {
+          email,
+          userId,
+        },
+      });
+    },
+    onSuccess: () => {
+      toast.success("Email sent - please check your email");
+    },
+  });
+
   const logOutUser = useMutation({
     mutationFn: async () => {
       await agent.post("/account/logout");
@@ -48,10 +64,12 @@ export const useAccount = () => {
       const response = await agent.get<User>("/account/user-info");
       return response.data;
     },
-    enabled:!queryClient.getQueryData(['user'])
+    enabled: !queryClient.getQueryData(["user"]),
   });
   return {
     registerUser,
+    verifyEmail,
+    resendConfirmationEmail,
     logInUser,
     currentUser,
     loadingUserInfo,
