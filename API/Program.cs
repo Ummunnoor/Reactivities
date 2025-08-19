@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Persistence;
 using Resend;
 var builder = WebApplication.CreateBuilder(args);
@@ -46,9 +47,9 @@ builder.Services.Configure<ResendClientOptions>(opt =>
     opt.ApiToken = builder.Configuration["Resend:ApiToken"]!;
 });
 
-
+builder.Services.AddOptions();
 builder.Services.AddTransient<IResend, ResendClient>();
-builder.Services.AddScoped<IEmailSender<User>, EmailSender>();
+builder.Services.AddTransient<IEmailSender<User>, EmailSender>();
 
 builder.Services.AddScoped<IUserAccessor, UserAccessor>();
 builder.Services.AddScoped<IPhotoService, PhotoService>();

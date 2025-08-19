@@ -6,24 +6,44 @@ import { Box, Button, Paper, Typography } from "@mui/material";
 import { LockOpen } from "@mui/icons-material";
 import TextInput from "../../app/shared/components/TextInput";
 import { Link, useLocation, useNavigate } from "react-router";
+import { useState } from "react";
+import { toast } from "react-toastify";
 
 export default function LogInForm() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { logInUser } = useAccount();
+  const { logInUser, resendConfirmationEmail } = useAccount();
+  const [notVerified, setNotVerified] = useState(false);
   const {
     control,
+    watch,
     handleSubmit,
     formState: { isValid, isSubmitting },
   } = useForm<LogInSchema>({
     mode: "onTouched",
     resolver: zodResolver(logInSchema),
   });
+  const email = watch('email');
+
+  const handleResendEmail = async () => {
+    try {
+      await resendConfirmationEmail.mutateAsync({email})
+    setNotVerified(false);
+      
+    } catch (error) {
+      console.log(error)
+      toast.error('Problem sending email- please check email address');
+    }
+    
+  };
   const onSubmit = async (data: LogInSchema) => {
     await logInUser.mutateAsync(data, {
-      onSuccess : () => {
-        navigate(location.state?.from || '/activities');
-      }
+      onSuccess: () => {
+        navigate(location.state?.from || "/activities");
+      },
+      onError: (error) => {
+        if (error.message === "NotAllowed") setNotVerified(true);
+      },
     });
   };
   return (
@@ -65,9 +85,22 @@ export default function LogInForm() {
       >
         Login
       </Button>
-      <Typography sx={{textAlign: 'center'}}>Don't have an account?
-        <Typography component={Link} to= '/register' color="primary" ml={2}>Sign Up</Typography>
-      </Typography>
+      {notVerified ? (
+        <Box display="flex" flexDirection="column" justifyContent="center">
+          <Typography textAlign="center" color="error">
+            Your email has not been verified. You can click the button to resend
+            the verification link
+          </Typography>
+          <Button disabled={resendConfirmationEmail.isPending} onClick={handleResendEmail}>Resend email link</Button>
+        </Box>
+      ) : (
+        <Typography sx={{ textAlign: "center" }}>
+          Don't have an account?
+          <Typography component={Link} to="/register" color="primary" ml={2}>
+            Sign Up
+          </Typography>
+        </Typography>
+      )}
     </Paper>
   );
 }
