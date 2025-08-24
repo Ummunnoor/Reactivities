@@ -2,6 +2,7 @@ import { Link, useSearchParams } from "react-router";
 import { useAccount } from "../../lib/hooks/useAccount";
 import { useEffect, useRef, useState } from "react";
 import { Box, Button, Divider, Paper, Typography } from "@mui/material";
+import { EmailRounded } from "@mui/icons-material";
 
 export default function VerifyEmail() {
   const { verifyEmail, resendConfirmationEmail } = useAccount();
@@ -75,6 +76,7 @@ export default function VerifyEmail() {
         p: 6,
       }}
     >
+      <EmailRounded sx={{fontSize: 100}} color="primary" />
       <Typography gutterBottom variant="h3">
         Email Verification
       </Typography>
