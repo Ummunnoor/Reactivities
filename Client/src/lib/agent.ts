@@ -2,19 +2,20 @@ import axios from "axios";
 import { store } from "./stores/store";
 import { toast } from "react-toastify";
 import { router } from "../app/router/Routes";
-const sleep = (delay: number) => {
-  return new Promise((resolve) => {
-    setTimeout(resolve, delay);
-  });
-};
+
+const sleep = (delay: number) =>
+  new Promise((resolve) => setTimeout(resolve, delay));
+
 const agent = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
   withCredentials: true,
 });
+
 agent.interceptors.request.use((config) => {
   store.uiStore.isBusy();
   return config;
 });
+
 agent.interceptors.response.use(
   async (response) => {
     if (import.meta.env.DEV) await sleep(1000);
@@ -24,40 +25,50 @@ agent.interceptors.response.use(
   async (error) => {
     if (import.meta.env.DEV) await sleep(1000);
     store.uiStore.isIdle();
+
+    if (!error.response) {
+      // network error or CORS
+      toast.error("Network error – please check your connection.");
+      return Promise.reject(new Error("NetworkError"));
+    }
+
     const { status, data } = error.response;
+
     switch (status) {
       case 400:
-        if (data.errors) {
-          const modalStateErrors = [];
+        if (data?.errors) {
+          const modalStateErrors: string[] = [];
           for (const key in data.errors) {
             if (data.errors[key]) {
               modalStateErrors.push(data.errors[key]);
             }
           }
-          throw modalStateErrors.flat();
+          return Promise.reject(modalStateErrors.flat());
         } else {
           toast.error(data);
+          return Promise.reject(new Error(typeof data === "string" ? data : "BadRequest"));
         }
-        break;
+
       case 401:
-        if (data.detail === "NotAllowed") {
-          throw new error(data.detail);
+        if (data?.detail === "NotAllowed") {
+          return Promise.reject(new Error("NotAllowed"));
         } else {
           toast.error("Unauthorized");
+          return Promise.reject(new Error("Unauthorized"));
         }
-        break;
 
       case 404:
         router.navigate("/not-found");
-        break;
+        return Promise.reject(new Error("NotFound"));
+
       case 500:
         router.navigate("/server-error", { state: { error: data } });
-        break;
+        return Promise.reject(new Error("ServerError"));
 
       default:
-        break;
+        return Promise.reject(new Error("UnexpectedError"));
     }
-    return Promise.reject(error);
   }
 );
+
 export default agent;

@@ -9,5 +9,5 @@ export function timeAgo(date : Date){
     return formatDistanceToNow(date) + ' ago'
 }
 
-export const requiredString = (fieldName: string) => z.string({required_error:  `${fieldName} isrequired`})
-.min(1, {message: `${fieldName} isrequired`})
+export const requiredString = (fieldName: string) => z.string({required_error:  `${fieldName} is required`})
+.min(1, {message: `${fieldName} is required`})
